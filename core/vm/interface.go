@@ -97,4 +97,11 @@ type StateDB interface {
 
 	// Finalise must be invoked at the end of a transaction
 	Finalise(bool)
+
+	// GetOwner returns the owner address of the given contract
+	GetOwner(contract common.Address) (common.Address, error)
+	// SetOwner sets the owner address for the given contract
+	SetOwner(contract, owner common.Address)
+	// CanCreateContract checks if the given address is allowed to create contracts
+	CanCreateContract(address common.Address) (bool, error)
 }

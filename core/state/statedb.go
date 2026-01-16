@@ -1530,3 +1530,21 @@ func (s *StateDB) Witness() *stateless.Witness {
 func (s *StateDB) AccessEvents() *AccessEvents {
 	return s.accessEvents
 }
+
+// GetOwner returns the owner address of the given contract.
+// This is a dummy implementation. The actual implementation is in Cosmos EVM layer.
+func (s *StateDB) GetOwner(contract common.Address) (common.Address, error) {
+	return common.Address{}, nil
+}
+
+// SetOwner sets the owner address for the given contract.
+// This is a dummy implementation. The actual implementation is in Cosmos EVM layer.
+func (s *StateDB) SetOwner(contract, owner common.Address) {
+	// Dummy implementation - actual logic in Cosmos EVM layer
+}
+
+// CanCreateContract checks if the given address is allowed to create contracts.
+// This is a dummy implementation. The actual implementation is in Cosmos EVM layer.
+func (s *StateDB) CanCreateContract(address common.Address) (bool, error) {
+	return true, nil
+}
