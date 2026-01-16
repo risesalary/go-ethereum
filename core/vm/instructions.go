@@ -692,6 +692,10 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]b
 		interpreter.returnData = res // set REVERT data to return data buffer
 		return res, nil
 	}
+	if suberr == ErrDeveloperOnly {
+		// Return error message with error (Quarix custom)
+		return res, ErrDeveloperOnly
+	}
 	interpreter.returnData = nil // clear dirty return data buffer
 	return nil, nil
 }
@@ -727,6 +731,10 @@ func opCreate2(pc *uint64, interpreter *EVMInterpreter, scope *ScopeContext) ([]
 	if suberr == ErrExecutionReverted {
 		interpreter.returnData = res // set REVERT data to return data buffer
 		return res, nil
+	}
+	if suberr == ErrDeveloperOnly {
+		// Return error message with error (Quarix custom)
+		return res, ErrDeveloperOnly
 	}
 	interpreter.returnData = nil // clear dirty return data buffer
 	return nil, nil

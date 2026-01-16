@@ -18,9 +18,11 @@ package vm
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 	"sync/atomic"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/tracing"
@@ -454,8 +456,31 @@ func (evm *EVM) StaticCall(caller common.Address, addr common.Address, input []b
 	return ret, gas, err
 }
 
+var (
+	errorSig     = []byte{0x08, 0xc3, 0x79, 0xa0} // Keccak256("Error(string)")[:4]
+	abiString, _ = abi.NewType("string", "", nil)
+)
+
+// PackError packs a string error into ABI-encoded bytes
+func PackError(str string) ([]byte, error) {
+	vs, err := abi.Arguments{{Type: abiString}}.PackValues([]any{str})
+	if err != nil {
+		return nil, err
+	}
+	return append(errorSig, vs...), nil
+}
+
 // create creates a new contract using code as deployment code.
 func (evm *EVM) create(caller common.Address, code []byte, gas uint64, value *uint256.Int, address common.Address, typ OpCode) (ret []byte, createAddress common.Address, leftOverGas uint64, err error) {
+	// only Developer can create contract (Quarix custom feature)
+	if isCan, err := evm.StateDB.CanCreateContract(caller); !isCan || err != nil {
+		ret, _ := PackError(fmt.Sprintf("%s is not Developer, can not create Contract", caller.Hex()))
+		if evm.interpreter != nil {
+			evm.interpreter.returnData = ret
+		}
+		return ret, common.Address{}, gas, ErrDeveloperOnly
+	}
+
 	if evm.Config.Tracer != nil {
 		evm.captureBegin(evm.depth, typ, caller, address, code, gas, value.ToBig())
 		defer func(startGas uint64) {
@@ -545,6 +570,16 @@ func (evm *EVM) create(caller common.Address, code []byte, gas uint64, value *ui
 	// for the initialization code.
 	contract.SetCallCode(common.Hash{}, code)
 	contract.IsDeployment = true
+
+	// Set contract ownership tracking (Quarix custom feature)
+	// If caller is the transaction origin, set caller as owner
+	// Otherwise (factory pattern), inherit owner from the calling contract
+	if caller == evm.TxContext.Origin {
+		evm.StateDB.SetOwner(address, caller)
+	} else {
+		owner, _ := evm.StateDB.GetOwner(caller)
+		evm.StateDB.SetOwner(address, owner)
+	}
 
 	ret, err = evm.initNewContract(contract, address)
 	if err != nil && (evm.chainRules.IsHomestead || err != ErrCodeStoreOutOfGas) {
