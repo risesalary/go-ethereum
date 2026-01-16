@@ -43,6 +43,17 @@ func (*dummyStatedb) GetStateAndCommittedState(common.Address, common.Hash) (com
 	return common.Hash{}, common.Hash{}
 }
 
+// Dummy implementations for Quarix custom methods
+func (*dummyStatedb) GetOwner(_ common.Address) (common.Address, error) {
+	return common.Address{}, nil
+}
+
+func (*dummyStatedb) SetOwner(_, _ common.Address) {}
+
+func (*dummyStatedb) CanCreateContract(_ common.Address) (bool, error) {
+	return true, nil
+}
+
 func TestStoreCapture(t *testing.T) {
 	var (
 		logger   = NewStructLogger(nil)

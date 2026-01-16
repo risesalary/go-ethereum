@@ -280,3 +280,18 @@ func (s *hookedStateDB) Finalise(deleteEmptyObjects bool) {
 		}
 	}
 }
+
+// GetOwner returns the owner address of the given contract (dummy implementation).
+func (s *hookedStateDB) GetOwner(contract common.Address) (common.Address, error) {
+	return s.inner.GetOwner(contract)
+}
+
+// SetOwner sets the owner address for the given contract (dummy implementation).
+func (s *hookedStateDB) SetOwner(contract, owner common.Address) {
+	s.inner.SetOwner(contract, owner)
+}
+
+// CanCreateContract checks if the given address is allowed to create contracts (dummy implementation).
+func (s *hookedStateDB) CanCreateContract(address common.Address) (bool, error) {
+	return s.inner.CanCreateContract(address)
+}

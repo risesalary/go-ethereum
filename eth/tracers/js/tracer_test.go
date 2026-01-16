@@ -40,6 +40,13 @@ type dummyStatedb struct {
 func (*dummyStatedb) GetRefund() uint64                           { return 1337 }
 func (*dummyStatedb) GetBalance(addr common.Address) *uint256.Int { return new(uint256.Int) }
 
+// Dummy implementations for Quarix custom methods
+func (*dummyStatedb) GetOwner(_ common.Address) (common.Address, error) {
+	return common.Address{}, nil
+}
+func (*dummyStatedb) SetOwner(_, _ common.Address)                     {}
+func (*dummyStatedb) CanCreateContract(_ common.Address) (bool, error) { return true, nil }
+
 type vmContext struct {
 	blockCtx vm.BlockContext
 	txCtx    vm.TxContext
