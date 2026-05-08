@@ -524,9 +524,7 @@ func (evm *EVM) create(caller common.Address, code []byte, gas uint64, value *ui
 	// only Developer can create contract (Quarix custom feature)
 	if isCan, err := evm.StateDB.CanCreateContract(caller); !isCan || err != nil {
 		ret, _ := PackError(fmt.Sprintf("%s is not Developer, can not create Contract", caller.Hex()))
-		if evm.interpreter != nil {
-			evm.interpreter.returnData = ret
-		}
+		evm.returnData = ret
 		return ret, common.Address{}, gas, ErrDeveloperOnly
 	}
 
